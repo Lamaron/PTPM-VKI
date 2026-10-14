@@ -15,6 +15,7 @@ ERROR_DATE = "0000-00-00"
 
 class TestDeliveryWeightLimits(unittest.TestCase):
 
+
     def test_weight_below_minimum_returns_error(self):
         cost, date = calculate_delivery_cost(0.05, 100, "обычный")
         self.assertEqual(cost, -1)
@@ -163,6 +164,12 @@ class TestDeliveryDates(unittest.TestCase):
         _, express_date = calculate_delivery_cost(1.0, 1000, "обычный", is_express=True)
         self.assertLess(express_date, regular_date)
 
+    def test_cost_rounded_not_truncated(self):
+        cost, _ = calculate_delivery_cost(25, 101, "обычный")
+        self.assertEqual(cost, 1058)
+
+    def test_delivery_date_with_express(self):
+        self.assertEqual((calculate_delivery_cost(1,1,"обычный", True)), (307.5, "2026-09-04"))
 
 if __name__ == "__main__":
     unittest.main()
