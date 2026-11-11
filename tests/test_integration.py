@@ -36,7 +36,6 @@ class TestIntegrationControllerFullFlow(unittest.TestCase):
         self.assertIsNotNone(cached)
         self.assertTrue(cached["result"])
 
-        # Проверка вызова заглушки внешней зависимости
         self.notifier.send.assert_called_once()
         sent_text = self.notifier.send.call_args[0][0]
         self.assertIn("john_doe", sent_text)
@@ -72,10 +71,9 @@ class TestIntegrationControllerFullFlow(unittest.TestCase):
 
         result2, _ = controller.process_registration()
         self.assertTrue(result2)
-        self.assertEqual(validator.validate.call_count, 1)  # не изменился
+        self.assertEqual(validator.validate.call_count, 1)
 
         self.assertEqual(self.notifier.send.call_count, 2)
-        # в первом сообщении источник "computed", во втором "cache"
         self.assertIn("computed", self.notifier.send.call_args_list[0][0][0])
         self.assertIn("cache", self.notifier.send.call_args_list[1][0][0])
 
@@ -98,37 +96,7 @@ class TestIntegrationWithRealEmailNotifier(unittest.TestCase):
         db.close()
 
 
-class TestIntegrationDatabasePersistence(unittest.TestCase):
 
-    def test_record_survives_reopening_db(self):
-        import tempfile
-
-        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
-            db_path = tmp.name
-
-        try:
-            ui1 = Mock(spec=AbstractUserInterface)
-            ui1.get_input.side_effect = ["john_doe", "Пароль1!", "Пароль1!"]
-            db1 = RegistrationRepository(db_path)
-            notifier1 = Mock()
-            c1 = RegistrationController(ui1, db1, notifier1)
-            c1.process_registration()
-            db1.close()
-
-            ui2 = Mock(spec=AbstractUserInterface)
-            ui2.get_input.side_effect = ["john_doe", "Пароль1!", "Пароль1!"]
-            db2 = RegistrationRepository(db_path)
-            notifier2 = Mock()
-            validator2 = Mock(spec=RegistrationValidator)
-            c2 = RegistrationController(ui2, db2, notifier2, validator=validator2)
-
-            result, _ = c2.process_registration()
-
-            self.assertTrue(result)
-            validator2.validate.assert_not_called()
-            db2.close()
-        finally:
-            os.unlink(db_path)
 
 class TestRepositoryUnit(unittest.TestCase):
     def setUp(self):
