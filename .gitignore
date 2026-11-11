@@ -1,0 +1,6 @@
+.coverage
+        .idea/
+        src/__pycache__/
+        src/users.db
+        tests/.coverage
+        tests/__pycache__/
